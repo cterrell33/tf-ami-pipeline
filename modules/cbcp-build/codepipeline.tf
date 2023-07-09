@@ -1,3 +1,42 @@
+resource "aws_codebuild_project" "this" {
+  name           = "var.codebuild_project_name"
+  description    = "CodeBuild Project for ${var.codebuild_project_name}"
+  build_timeout  = "60"
+  queued_timeout = "60"
+  # service_role   = "arn:aws:iam::${var.account_id}:role/tfadmin"
+  # service_role   = aws_iam_role.this.arn
+  artifacts {
+    type = "CODEPIPELINE"
+  }
+  environment {
+    compute_type = "BUILD_GENERAL1_MEDIUM"
+    image        = "aws/codebuild/amazonlinux2-x86_64-standard:4.0"
+    type         = "LINUX_CONTAINER"
+    environment_variable {
+      name  = "environment"
+      value = "dev" #dev
+    }
+  }
+  source {
+    type            = "CODEPIPELINE"
+    git_clone_depth = 0
+  }
+  vpc_config {
+    vpc_id = var.vpc_id
+    subnets = [
+      var.subnet_id_0,
+      var.subnet_id_1,
+    ]
+    security_group_ids = [
+      modules.aws_security_group.mastersg.id
+    ]
+  }
+  tags = {
+    Environment    = var.environment
+    created_by = var.created_by_tag
+  }
+} 
+
 resource "aws_codepipeline" "codepipeline" {
   name     = var.pipeline_name
   role_arn = aws_iam_role.codepipeline_role.arn
@@ -44,7 +83,7 @@ resource "aws_codepipeline" "codepipeline" {
       version          = "1"
 
       configuration = {
-        ProjectName = "${var.environment}-${var.codebuild_project_name}"
+        ProjectName = var.codebuild_project_name
         EnvironmentVariables = jsonencode([
           {
             name  = "SCRIPT"
@@ -60,11 +99,6 @@ resource "aws_codepipeline" "codepipeline" {
             name  = "ENV"
             value = var.environment
             type  = "PLAINTEXT"
-          },
-          {
-            name  = "REPO"
-            value = var.repo
-            type  = "PLAINTEXT"
           }
         ])
       }
@@ -73,14 +107,7 @@ resource "aws_codepipeline" "codepipeline" {
 }
 
 resource "aws_s3_bucket" "codepipeline_bucket" {
-  bucket = "${var.environment}-codepipeline-artifacts-${random_id.this.hex}"
-
-  tags = {
-    created_by    = var.created_by_tag
-    o_Environment = var.o_environment
-    o_Project     = var.o_project
-    Owner         = var.owner
-  }
+  bucket = "codepipeline-artifacts-${random_id.this.hex}"
 }
 
 resource "aws_s3_bucket_ownership_controls" "this" {
@@ -94,6 +121,71 @@ resource "aws_s3_bucket_acl" "codepipeline_bucket_acl" {
   depends_on = [aws_s3_bucket_ownership_controls.this]
   bucket = aws_s3_bucket.codepipeline_bucket.id
   acl    = "private"
+}
+
+data "aws_iam_policy_document" "assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["codepipeline.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "codepipeline_role" {
+  name               = "codepipeline-${random_id.this.hex}"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+  permissions_boundary = "arn:aws:iam::949588328828:policy/ose.boundary.DeveloperFull"
+
+  #tags = {
+  #  created_by = var.created_by_tag
+  #}
+}
+
+data "aws_iam_policy_document" "codepipeline_policy" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "s3:GetObject",
+      "s3:GetObjectVersion",
+      "s3:GetBucketVersioning",
+      "s3:PutObjectAcl",
+      "s3:PutObject",
+    ]
+
+    resources = [
+      aws_s3_bucket.codepipeline_bucket.arn,
+      "${aws_s3_bucket.codepipeline_bucket.arn}/*"
+    ]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["codestar-connections:UseConnection"]
+    resources = [var.codestar_connection_arn]
+  }
+
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "codebuild:BatchGetBuilds",
+      "codebuild:StartBuild",
+    ]
+
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "codepipeline_policy" {
+  name   = "codepipeline_policy"
+  role   = aws_iam_role.codepipeline_role.id
+  policy = data.aws_iam_policy_document.codepipeline_policy.json
 }
 
 data "aws_kms_alias" "s3kmskey" {
