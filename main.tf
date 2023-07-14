@@ -7,7 +7,7 @@ module "aws_security_group" {
 module "aws_cbcp_build" {
   source                 = "./modules/aws_cbcp_build"
   pipeline_name          = "Password_Rotate"
-  full_repository_id     = "https://github.com/cterrell33/autorotate.git"
+  full_repository_id     = "cterrell33/autorotate"
   codebuild_project_name = "Execute_Password_Rotate"
   security_group_id      = module.aws_security_group.id
   depends_on = [
