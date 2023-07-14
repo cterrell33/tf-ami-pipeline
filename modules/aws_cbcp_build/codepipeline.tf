@@ -1,5 +1,7 @@
-resource "aws_s3_bucket" "mybucket" {
-  bucket = "mytfbucket2000"
+module "aws_security_group"{
+  source = "github.com/cterrell33/tf-projects//modules/aws_security_group"
+  security_group_name = "Made with Pipeline"
+  vpc_id = "vpc-0e028ff8fd78c9404"
 }
 
 resource "aws_codebuild_project" "this" {
@@ -30,9 +32,7 @@ resource "aws_codebuild_project" "this" {
       "subnet-0e3591a6509b9609d",
       "subnet-0a14fb7560263e837",
     ]
-    security_group_ids = [
-      module.aws_security_group.aws_security_group_id
-    ]
+    security_group_ids = module.security_group_id
   }
 } 
 

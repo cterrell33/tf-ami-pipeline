@@ -1,5 +1,6 @@
 variable "security_group_name"{
     type = string
+    default = "Master-Security-Group"
 }
 variable "vpc_id"{
     type = string

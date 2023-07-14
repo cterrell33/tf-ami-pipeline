@@ -1,8 +1,8 @@
 
-#variable "security_group_id" {
-#  description = "Security Group ID"
-#  type        = string
-#}
+variable "security_group_id" {
+  description = "Security Group ID"
+  type        = string
+}
 
 variable "pipeline_name" {
   description = "CodePipeline Pipeline name"
@@ -17,11 +17,6 @@ variable "codestar_connection_arn" {
 
 variable "full_repository_id" {
   description = "GitHub Full Repository ID"
-  type        = string
-}
-
-variable "repo" {
-  description = "GitHub Repository name"
   type        = string
 }
 
@@ -45,5 +40,6 @@ variable "prep" {
 
 variable "codebuild_project_name" {
   description = "CodeBuild Project name"
+  default     = "Execute"
   type        = string
 }

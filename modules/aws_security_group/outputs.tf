@@ -3,7 +3,7 @@ output "aws_security_group_arn" {
     description = "mastersg arn"
 }
 
-output "aws_security_group_id"{
+output "id"{
     value = aws_security_group.mastersg.id
     description = "mastersg id"
 }
