@@ -1,4 +1,3 @@
-
 variable "security_group_id" {
   description = "Security Group ID"
   type        = string
@@ -40,6 +39,5 @@ variable "prep" {
 
 variable "codebuild_project_name" {
   description = "CodeBuild Project name"
-  default     = "Execute"
   type        = string
 }

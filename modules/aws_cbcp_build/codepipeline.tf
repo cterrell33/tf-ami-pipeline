@@ -1,11 +1,5 @@
-module "aws_security_group"{
-  source = "github.com/cterrell33/tf-projects//modules/aws_security_group"
-  security_group_name = "Made with Pipeline"
-  vpc_id = "vpc-0e028ff8fd78c9404"
-}
-
 resource "aws_codebuild_project" "this" {
-  name           = "${var.codebuild_project_name}"
+  name           = var.codebuild_project_name
   description    = "CodeBuild Project for ${var.codebuild_project_name}"
   build_timeout  = "60"
   queued_timeout = "60"
@@ -103,6 +97,9 @@ resource "aws_codepipeline" "codepipeline" {
       }
     }
   }
+  depends_on = [
+  aws_codebuild_project.this
+  ]
 }
 
 resource "aws_s3_bucket" "codepipeline_bucket" {
@@ -170,6 +167,8 @@ data "aws_iam_policy_document" "codepipeline_policy" {
     actions = [
       "codebuild:BatchGetBuilds",
       "codebuild:StartBuild",
+      "ec2:DescribeSecurityGroups",
+      "ec2:DescribeSubnets",
     ]
 
     resources = ["*"]
