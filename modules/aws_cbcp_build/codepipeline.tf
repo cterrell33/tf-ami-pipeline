@@ -1,10 +1,13 @@
+resource "aws_s3_bucket" "mybucket" {
+  bucket = "mytfbucket2000"
+}
+
 resource "aws_codebuild_project" "this" {
-  name           = "var.codebuild_project_name"
+  name           = "${var.codebuild_project_name}"
   description    = "CodeBuild Project for ${var.codebuild_project_name}"
   build_timeout  = "60"
   queued_timeout = "60"
-  # service_role   = "arn:aws:iam::${var.account_id}:role/tfadmin"
-  # service_role   = aws_iam_role.this.arn
+  service_role   = aws_iam_role.codepipeline_role.arn
   artifacts {
     type = "CODEPIPELINE"
   }
@@ -22,18 +25,14 @@ resource "aws_codebuild_project" "this" {
     git_clone_depth = 0
   }
   vpc_config {
-    vpc_id = var.vpc_id
+    vpc_id = "vpc-0e028ff8fd78c9404"
     subnets = [
-      var.subnet_id_0,
-      var.subnet_id_1,
+      "subnet-0e3591a6509b9609d",
+      "subnet-0a14fb7560263e837",
     ]
     security_group_ids = [
-      modules.aws_security_group.mastersg.id
+      module.aws_security_group.aws_security_group_id
     ]
-  }
-  tags = {
-    Environment    = var.environment
-    created_by = var.created_by_tag
   }
 } 
 
@@ -97,7 +96,7 @@ resource "aws_codepipeline" "codepipeline" {
           },
           {
             name  = "ENV"
-            value = var.environment
+            value = "dev"
             type  = "PLAINTEXT"
           }
         ])
@@ -129,7 +128,7 @@ data "aws_iam_policy_document" "assume_role" {
 
     principals {
       type        = "Service"
-      identifiers = ["codepipeline.amazonaws.com"]
+      identifiers = ["codepipeline.amazonaws.com","codebuild.amazonaws.com"]
     }
 
     actions = ["sts:AssumeRole"]
@@ -139,11 +138,6 @@ data "aws_iam_policy_document" "assume_role" {
 resource "aws_iam_role" "codepipeline_role" {
   name               = "codepipeline-${random_id.this.hex}"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
-  permissions_boundary = "arn:aws:iam::949588328828:policy/ose.boundary.DeveloperFull"
-
-  #tags = {
-  #  created_by = var.created_by_tag
-  #}
 }
 
 data "aws_iam_policy_document" "codepipeline_policy" {
