@@ -26,6 +26,7 @@ resource "aws_codebuild_project" "this" {
       "subnet-0e3591a6509b9609d",
       "subnet-0a14fb7560263e837",
     ]
+    security_group_ids = [var.security_group_id]
   }
 } 
 
@@ -139,7 +140,6 @@ resource "aws_iam_role" "codepipeline_role" {
 data "aws_iam_policy_document" "codepipeline_policy" {
   statement {
     effect = "Allow"
-
     actions = [
       "s3:GetObject",
       "s3:GetObjectVersion",
@@ -147,7 +147,6 @@ data "aws_iam_policy_document" "codepipeline_policy" {
       "s3:PutObjectAcl",
       "s3:PutObject",
     ]
-
     resources = [
       aws_s3_bucket.codepipeline_bucket.arn,
       "${aws_s3_bucket.codepipeline_bucket.arn}/*"
