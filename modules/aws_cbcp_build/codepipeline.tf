@@ -26,7 +26,6 @@ resource "aws_codebuild_project" "this" {
       "subnet-0e3591a6509b9609d",
       "subnet-0a14fb7560263e837",
     ]
-    security_group_ids = var.security_group_id
   }
 } 
 
