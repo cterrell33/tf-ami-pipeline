@@ -8,7 +8,7 @@ data "aws_subnets" "private" {
     values = [var.vpc_id]
   }
   tags = {
-    Tier = "Private"
+    name = "{*private*}"
   }
 }
 provider "aws" {
