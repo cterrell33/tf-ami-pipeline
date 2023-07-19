@@ -1,3 +1,13 @@
+variable "vpc_id" {
+  description = "vpc"
+  type        = string
+}
+
+variable "subnets" {
+  description = "subnets"
+  type        = set(string)
+}
+
 variable "security_group_id" {
   description = "Security Group ID"
   type        = string
@@ -27,7 +37,7 @@ variable "branch_name" {
 
 variable "script" {
   description = "Script CodeBuild Project is executing"
-  default     = "terragrunt-apply.sh"
+  default     = "build-ami.sh"
   type        = string
 }
 

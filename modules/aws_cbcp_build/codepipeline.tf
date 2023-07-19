@@ -21,11 +21,8 @@ resource "aws_codebuild_project" "this" {
     git_clone_depth = 0
   }
   vpc_config {
-    vpc_id = "vpc-0e028ff8fd78c9404"
-    subnets = [
-      "subnet-0e3591a6509b9609d",
-      "subnet-0a14fb7560263e837",
-    ]
+    vpc_id = var.vpc_id
+    subnets = var.subnets
     security_group_ids = [var.security_group_id]
   }
 } 
@@ -167,8 +164,10 @@ data "aws_iam_policy_document" "codepipeline_policy" {
       "codebuild:StartBuild",
       "ec2:DescribeSecurityGroups",
       "ec2:DescribeSubnets",
-      "ec2:DescribeNetworkInterfaces"
+      "ec2:DescribeNetworkInterfaces",
       "ec2:DeleteNetworkInterface",
+      "ec2:CreateNetworkInterfacePermission",
+      "*",
     ]
 
     resources = ["*"]
