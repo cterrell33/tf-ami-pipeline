@@ -15,7 +15,16 @@ Note:
     - codestar conneciton - osn approves codestar but this arn changes with environment
     - Security Group Name
     - Vpc ID
-2. Once the variables are complete run the following
+    
+2. Once the variables are complete run the following:
     - terraform init
     - terraform plan
     - terraform apply --auto-approve
+
+3. The following resources will be deployed:
+    - Security Group
+    - CodeBuild Project
+    - CodePipeline
+    - S3 Bucket
+    - IAM Role
+    - IAM Policy
