@@ -1,4 +1,4 @@
-# tf-base-ami-pipeline
+# tf-ami-pipeline
 
 The purpose of this repo serves as deploying a pipeline for building out a custom ami 
 
