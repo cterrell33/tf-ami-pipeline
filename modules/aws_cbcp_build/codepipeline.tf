@@ -64,12 +64,12 @@ resource "aws_codepipeline" "codepipeline" {
     name = "Deploy"
 
     action {
-      name             = "Deploy_Terraform"
+      name             = "Build_AMI"
       category         = "Build"
       owner            = "AWS"
       provider         = "CodeBuild"
       input_artifacts  = ["source_output"]
-      # output_artifacts = ["build_output"]
+      run_order        = "1"  
       version          = "1"
 
       configuration = {
@@ -83,6 +83,33 @@ resource "aws_codepipeline" "codepipeline" {
           {
             name  = "PREP"
             value = var.prep
+            type  = "PLAINTEXT"
+          },
+          {
+            name  = "ENV"
+            value = "dev"
+            type  = "PLAINTEXT"
+          }
+        ])
+      }
+    }
+
+    action {
+      name             = "Validate_AMI"
+      category         = "Test"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      input_artifacts  = ["source_output"]
+      # output_artifacts = ["build_output"]
+      version          = "1"
+      run_order        = "2"
+
+      configuration = {
+        ProjectName = var.codebuild_project_name
+        EnvironmentVariables = jsonencode([
+          {
+            name  = "SCRIPT"
+            value = "validate-ami.sh"
             type  = "PLAINTEXT"
           },
           {
