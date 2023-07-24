@@ -20,7 +20,6 @@ variable "pipeline_name" {
 
 variable "codestar_connection_arn" {
   description = "CodeStar Connecton ARN"
-  default     = "arn:aws:codestar-connections:us-east-1:949588328828:connection/275aa982-0ded-4841-b3c5-35e4867bf21b"
   type        = string
 }
 
